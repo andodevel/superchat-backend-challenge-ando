@@ -13,7 +13,7 @@ I develop this challenge with some assumptions in mind:
 1. JDK 11
 2. Docker and docker compose
 
-## Local up and running 
+## LOCAL UP AND RUNNING
 
 To ease the development, external tools this application dependents on start in docker containers. 
 However, the quarkus application itself run directly in localhost using Maven.
@@ -44,19 +44,41 @@ Specify _-s_ option to stop running docker containers and quarkus.
  ```  
 
 ## Test the application
-### From  the CLI
-The application exposes 3 endpoints:
-* `/api/users`
-* `/api/messages`
-* `/api/webhooks`
+The application exposes 4 services:
+* `/api/auth` Authentication service
+* `/api/users` User service
+* `/api/messages` Message service
+* `/api/webhooks` Webhook service
 
-You can try these endpoints with an http client (`curl`, `Postman`, etc).
-Here you have some examples to check the security configuration:
+Database is initialized with some test users:
+1. superchatadmin/superchatadmin
+2. andodevel/andodevel
 
+### From the CLI
+You can try these endpoints with http client `curl`.
+
+Exchange username and password to JWT access token.
+The application only support token bearer security model.
 ```bash
-curl -i -X GET http://localhost:8080/api/users  # 'public'
+curl -i -X GET http://localhost:8080/api/auth/login
 ```
 
-## Open issues
+### Using Postman
+Postman is great option for non-CLI testing.
+
+
+### Logging and debugging
+DEBUG log files are generated under _logs/_ folder.
+
+[Adminer](https://www.adminer.org/) is deployed at http://localhost:8082/. 
+You could manage Postgres DB with its simple UI. Use below configuration to connect:
+- username=superuser
+- password=superuser
+- host=superchat-postgres
+- database=superchat_database
+- schema=public
+
+## Open for discussion
+
 
 
