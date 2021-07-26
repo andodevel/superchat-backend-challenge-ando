@@ -1,0 +1,14 @@
+version: "3"
+
+services:
+  database:
+    image: "postgres:10.5"
+    container_name: "superchat-postgres"
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  adminer:
+    image: adminer
+    ports:
+      - 8082:8080
