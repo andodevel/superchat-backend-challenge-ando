@@ -3,6 +3,7 @@ package de.superchat.message.service;
 import de.superchat.message.dto.CreateRequest;
 import de.superchat.message.dto.UserDTO;
 import de.superchat.message.repository.Message;
+import de.superchat.message.substitution.SubstitutionService;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
@@ -31,6 +32,8 @@ public class MessageServiceImpl implements MessageService {
     @Inject
     @RestClient
     UserService userService;
+    @Inject
+    SubstitutionService substitutionService;
 
     /**
      * List conversations with pagination.
@@ -99,7 +102,7 @@ public class MessageServiceImpl implements MessageService {
             newMessage.setSource("SC");
         }
         newMessage.setReceiverId(receiverId);
-        newMessage.setContent(createRequest.getContent());
+        newMessage.setContent(substitutionService.substitute(createRequest.getContent()));
         newMessage.setRoomId(null);
         newMessage.setCreated(new Date());
         newMessage.persist();

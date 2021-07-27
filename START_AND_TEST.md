@@ -38,7 +38,7 @@ POST |`/api/users` | N | Create contacts given their personal information (Name,
 GET |`/api/users` | Y | List all contacts
 POST |`/api/messages` | Y | Send a message to a contact
 GET |`/api/messages` | Y | List all previous conversations
-POST |`/api/webhooks/{id}` | N | Receive messages from an external service via a webhook
+POST |`/api/webhooks/{id}/messages` | N | Receive messages from an external service via a webhook
 
 Database is initialized with some test users:
 1. superchatadmin/superchatadmin
@@ -47,7 +47,18 @@ Database is initialized with some test users:
 ### Using Postman
 Postman is great option for non-CLI testing.
 
+I have exported my [Postman test collection](postman_v2.1_export.json).
+Please import and just followed the ordered tests.
 
 ### Using OpenAPI Swagger UI
 An instance of Swagger UI is deployed at http://localhost:8080/q/swagger-ui/.
 
+*NOTE*: The very first thing before explore the API is token exchange via `/auth/login` service,
+then set this token as Bearer for every API endpoint secured.
+If you use my Postman collection to test, it already automate the process of set this header.
+Just run the `1. Exchange username/password for JWT access token` test case.
+
+### Substitution feature
+Substitution are support for placeholder of:
+1. `@<username>` to be replaced with `<firstname> <lastname>`
+2. `BTC<number>` to be replaced with `$<USDT>`
