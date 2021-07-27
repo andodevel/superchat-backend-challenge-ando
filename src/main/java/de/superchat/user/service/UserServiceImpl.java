@@ -8,6 +8,7 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
+import java.util.Date;
 import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
 import javax.transaction.Transactional;
@@ -98,6 +99,7 @@ public class UserServiceImpl implements UserService {
         userInfo.setUser(newUser);
         userInfo.setFirstname(createRequest.getFirstname());
         userInfo.setLastname(createRequest.getLastname());
+        userInfo.setCreated(new Date());
         userInfo.persist();
         newUser.persist();
 

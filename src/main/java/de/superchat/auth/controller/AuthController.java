@@ -18,11 +18,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
+import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.jboss.logging.Logger;
 
 @Path("/api/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@SecuritySchemes(value = {
+    @SecurityScheme(securitySchemeName = "apiKey",
+        type = SecuritySchemeType.HTTP,
+        scheme = "Bearer")}
+)
 public class AuthController {
 
     public static final Logger LOGGER = Logger.getLogger(AuthController.class);
@@ -41,11 +50,12 @@ public class AuthController {
     @POST
     @Path("/login")
     @PermitAll
+    @Produces(MediaType.TEXT_PLAIN)
     public Response login(@Valid LoginRequest loginRequest) {
         AuthUser authUser = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
         if (authUser != null) {
             LOGGER.info("User " + loginRequest.getUsername() + " has been logged in");
-            return Response.ok(new SimpleResponse(authService.generateJWTToken(authUser))).build();
+            return Response.ok(authService.generateJWTToken(authUser)).build();
         } else {
             LOGGER.info("User " + loginRequest.getUsername() + " was failed to log in");
             return Response.status(Status.UNAUTHORIZED).build();
@@ -61,6 +71,7 @@ public class AuthController {
     @GET
     @Path("/me")
     @RolesAllowed({"USER"})
+    @SecurityRequirement(name = "apiKey")
     public Response me(@Context SecurityContext securityContext) {
         return Response.ok(new SimpleResponse(securityContext.getUserPrincipal().getName())).build();
     }

@@ -113,7 +113,7 @@ CREATE TABLE message (
     receiver_id   uuid              NOT NULL,
     type          varchar(8)        NOT NULL DEFAULT 'DM',
     source        varchar(8)        NOT NULL DEFAULT 'SC',
-    room_id       uuid              NOT NULL,
+    room_id       uuid, -- TODO: Room is better way to manage the message and scale the system. Unfortunately, not support yet!
     content       text              NOT NULL DEFAULT '',
     created       timestamp WITHOUT time zone DEFAULT now()
 );

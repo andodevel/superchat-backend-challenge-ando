@@ -25,13 +25,13 @@ I assume a couple of things during the development:
 ## Tech stack
 1. Language: `Java`(sorry, not `Kotlin`!)
 2. Framework: `Quarkus`
-3. Database: `Postgres` and `Redis` for caching.
+3. Database: `Postgres`
 4. ORM: `Hibernate`
 5. Build tool: `Maven`
 6. DevOps: `Docker`
 
 ## LOCAL UP AND RUNNING
-To ease the development, dependencies(Postgres, Admininer, Redis) start in docker containers.
+To ease the development, dependencies(Postgres, Admininer) start in docker containers.
 However, the quarkus application itself run directly in localhost using Maven.
 
 See [START_AND TEST_GUIDE](START_AND_TEST.md)

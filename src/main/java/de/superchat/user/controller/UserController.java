@@ -28,11 +28,20 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.collections4.CollectionUtils;
+import org.eclipse.microprofile.openapi.annotations.enums.SecuritySchemeType;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
+import org.eclipse.microprofile.openapi.annotations.security.SecurityScheme;
+import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.jboss.logging.Logger;
 
 @Path("/api/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
+@SecuritySchemes(value = {
+    @SecurityScheme(securitySchemeName = "apiKey",
+        type = SecuritySchemeType.HTTP,
+        scheme = "Bearer")}
+)
 public class UserController {
 
     public static final Logger LOGGER = Logger.getLogger(UserController.class);
@@ -44,12 +53,13 @@ public class UserController {
      * List all users with pagination applied.
      *
      * @param page page index, 0 by default
-     * @param size page size, `auth.default.page.size` config value by default
-     *             Limited by `auth.max.page.size` config value
+     * @param size page size, `auth.default.page.size` config value by default Limited by `auth.max.page.size` config
+     *             value
      * @return list of all internal and external users.
      */
     @GET
     @RolesAllowed({"USER"})
+    @SecurityRequirement(name = "apiKey")
     public Response list(@QueryParam("page") Integer page, @QueryParam("size") Integer size) {
         PanacheQuery<User> pagedUsers = userService.list(page, size);
         List<User> users = pagedUsers.list();
@@ -79,6 +89,7 @@ public class UserController {
     @GET
     @Path("/{id}")
     @RolesAllowed({"USER"})
+    @SecurityRequirement(name = "apiKey")
     public Response get(@PathParam("id") UUID id) {
         User user = userService.find(id);
         if (user == null) {
@@ -97,6 +108,7 @@ public class UserController {
     @GET
     @Path("/search/{usernameOrEmail}")
     @RolesAllowed({"USER"})
+    @SecurityRequirement(name = "apiKey")
     public Response search(@PathParam("usernameOrEmail") String usernameOrEmail) {
         User user = userService.findByUsernameOrEmail(usernameOrEmail);
         if (user == null) {

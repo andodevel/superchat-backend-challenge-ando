@@ -3,6 +3,9 @@
 _start() {
     CURRENT_UID=$(id -u):$(id -g) MUID=$(id -u) docker-compose start
 
+    # Sleep 10 second to wait for dockers up
+    echo "10 second until quarkus start" && sleep 10
+
     ./mvnw quarkus:dev -f pom.xml &
 }
 
@@ -21,7 +24,7 @@ _reset() {
     CURRENT_UID=$(id -u):$(id -g) MUID=$(id -u) docker-compose rm --force
     CURRENT_UID=$(id -u):$(id -g) MUID=$(id -u) docker-compose up --build --no-start
 
-    ./mvnw clean compile -T4
+    ./mvnw clean compile -DskipTest -T4
 }
 
 _usage() {

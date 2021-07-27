@@ -49,4 +49,6 @@ Database is initialized with some test users:
 Postman is great option for non-CLI testing.
 
 
+### Using OpenAPI Swagger UI
+An instance of Swagger UI is deployed at http://localhost:8080/q/swagger-ui/.
 
