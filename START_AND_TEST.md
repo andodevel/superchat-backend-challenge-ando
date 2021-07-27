@@ -31,11 +31,15 @@ Specify _-s_ option to stop running docker containers and quarkus.
  ```  
 
 ## Test the application
-The application exposes 4 services:
-* `/api/auth` Authentication service
-* `/api/users` User service
-* `/api/messages` Message service
-* `/api/webhooks` Webhook service
+There are service endpoints to solve the challenge
+
+METHOD | END POINT| AUTHENTICATION REQUIRED | DESCRIPTION
+--- | --- | --- | ---
+POST |`/api/users` | N | Create contacts given their personal information (Name, E-Mail, etc)
+GET |`/api/users` | Y | List all contacts
+POST |`/api/messages` | Y | Send a message to a contact
+GET |`/api/messages` | Y | List all previous conversations
+POST |`/api/webhooks/{id}` | N | Receive messages from an external service via a webhook
 
 Database is initialized with some test users:
 1. superchatadmin/superchatadmin
