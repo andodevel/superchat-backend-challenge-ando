@@ -38,6 +38,6 @@ public interface UserService {
      * @param createRequest
      * @return
      */
-    UUID create(CreateRequest createRequest) throws UserAlreadyExistingException;
+    UUID create(CreateRequest createRequest) throws ResourceConflictException;
 
 }

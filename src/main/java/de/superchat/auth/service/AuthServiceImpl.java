@@ -74,7 +74,6 @@ public class AuthServiceImpl implements AuthService {
         JwtClaimsBuilder claimsBuilder = Jwt.claims();
         claimsBuilder.subject(String.valueOf(id));
         claimsBuilder.groups(roles.stream().map(AuthRole::getId).collect(Collectors.toSet()));
-        claimsBuilder.claim(Claims.preferred_username.name(), username);
         claimsBuilder.claim(Claims.email.name(), email);
 
         String token = claimsBuilder.sign();

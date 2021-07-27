@@ -10,7 +10,10 @@ import io.quarkus.panache.common.Sort;
 import java.util.Date;
 import java.util.UUID;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.SecurityContext;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -26,6 +29,7 @@ public class MessageServiceImpl implements MessageService {
     Integer defaultPageSize;
     @ConfigProperty(name = "de.superchat.auth.max.page.size")
     Integer maxPageSize;
+    @Inject
     @RestClient
     UserService userService;
 
@@ -37,12 +41,14 @@ public class MessageServiceImpl implements MessageService {
      * @return message that current logged in user is sender or receiver.
      */
     @Override
-    public PanacheQuery<Message> list(Integer page, Integer size) {
+    public PanacheQuery<Message> list(SecurityContext securityContext, Integer page, Integer size) {
         int pageIndex = page == null || page < 0 ? 0 : page;
         int pageSize = size == null || size < 0 ? defaultPageSize : size;
         pageSize = pageSize > maxPageSize ? maxPageSize : pageSize;
 
-        PanacheQuery<PanacheEntityBase> all = Message.findAll(Sort.descending("created"));
+        PanacheQuery<PanacheEntityBase> all = Message.find("sender_id = ?1 or receiver_id = ?1",
+            Sort.descending("created"),
+            UUID.fromString(securityContext.getUserPrincipal().getName()));
         LOGGER.info("Query messages with page " + page + ", " + size);
         return all.page(Page.of(pageIndex, pageSize));
     }
@@ -55,11 +61,12 @@ public class MessageServiceImpl implements MessageService {
      */
     @Override
     @Transactional
-    public UUID create(SecurityContext securityContext, CreateRequest createRequest) throws UnsupportException {
+    public UUID create(SecurityContext securityContext, CreateRequest createRequest)
+        throws UnsupportException, ResourceNotFoundException {
         UserDTO receiver = getReceiver(createRequest);
-        if (receiver == null) {
+        if (receiver == null || receiver.getId() == null) {
             LOGGER.error("Receiver not found!");
-            throw new UnsupportException();
+            throw new ResourceNotFoundException();
         }
 
         if (!"SC".equals(receiver.getSource())) {
@@ -89,20 +96,21 @@ public class MessageServiceImpl implements MessageService {
      * @return user if exists
      */
     private UserDTO getReceiver(CreateRequest createRequest) {
-        String receiverId = createRequest.getReceiverId().trim();
-        String receiverUsername = createRequest.getReceiverUsername().trim();
-        String receiverEmail = createRequest.getReceiverEmail().trim();
+        String receiverId = StringUtils.trim(createRequest.getReceiverId());
+        String receiverUsername = StringUtils.trim(createRequest.getReceiverUsername());
+        String receiverEmail = StringUtils.trim(createRequest.getReceiverEmail());
 
+        Response apiResponse = null;
         if (StringUtils.isNoneBlank(receiverId)) {
-            return userService.findUserById(UUID.fromString(receiverId));
+            apiResponse = userService.findUserById(UUID.fromString(receiverId));
+        } else if (StringUtils.isNoneBlank(receiverUsername)) {
+            apiResponse = userService.findUserByUsernameOrEmail(receiverUsername);
+        } else if (StringUtils.isNoneBlank(receiverEmail)) {
+            apiResponse = userService.findUserByUsernameOrEmail(receiverEmail);
         }
 
-        if (StringUtils.isNoneBlank(receiverUsername)) {
-            return userService.findUserByUsernameOrEmail(receiverUsername);
-        }
-
-        if (StringUtils.isNoneBlank(receiverUsername)) {
-            return userService.findUserByUsernameOrEmail(receiverEmail);
+        if (apiResponse != null && Status.OK.getStatusCode() == apiResponse.getStatus()) {
+            return apiResponse.readEntity(UserDTO.class);
         }
 
         return null;

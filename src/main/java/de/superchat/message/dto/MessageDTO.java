@@ -20,7 +20,7 @@ public class MessageDTO implements Serializable {
         this.setContent(entity.getContent());
         this.setCreated(entity.getCreated());
         this.setSender(sender);
-        this.setSender(receiver);
+        this.setReceiver(receiver);
     }
 
 }

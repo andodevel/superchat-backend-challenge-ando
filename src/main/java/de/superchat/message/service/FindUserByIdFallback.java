@@ -1,11 +1,13 @@
 package de.superchat.message.service;
 
-import de.superchat.message.dto.UserDTO;
-import java.util.UUID;
+import javax.ws.rs.core.Response;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
+import org.jboss.logging.Logger;
 
-public class FindUserByIdFallback implements FallbackHandler<UserDTO> {
+public class FindUserByIdFallback implements FallbackHandler<Response> {
+
+    public static final Logger LOGGER = Logger.getLogger(FindUserByIdFallback.class);
 
     /**
      * Circuit breaker for rest call to find user by id.
@@ -14,11 +16,9 @@ public class FindUserByIdFallback implements FallbackHandler<UserDTO> {
      * @return user with id only
      */
     @Override
-    public UserDTO handle(ExecutionContext context) {
-        UUID userId = (UUID) context.getParameters()[0];
-        UserDTO user = new UserDTO();
-        user.setId(userId);
-        return user;
+    public Response handle(ExecutionContext context) {
+        LOGGER.error("RestCient was failed to find user by id " + context.getParameters()[0]);
+        return null;
     }
 
 }

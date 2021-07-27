@@ -50,7 +50,7 @@ public class User extends PanacheEntityBase {
     private String source = "SC";
 
     public static User findByUsernameOrEmail(String usernameOrEmail) {
-        return User.find("username = ?1 OR email = ?2", usernameOrEmail, usernameOrEmail)
+        return User.find("username = ?1 OR email = ?1", usernameOrEmail)
             .firstResult();
     }
 

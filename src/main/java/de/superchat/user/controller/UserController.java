@@ -2,10 +2,9 @@ package de.superchat.user.controller;
 
 import de.superchat.user.dto.CreateRequest;
 import de.superchat.user.dto.ListResponse;
-import de.superchat.user.dto.SimpleResponse;
 import de.superchat.user.dto.UserDTO;
 import de.superchat.user.repository.User;
-import de.superchat.user.service.UserAlreadyExistingException;
+import de.superchat.user.service.ResourceConflictException;
 import de.superchat.user.service.UserService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
@@ -65,7 +64,7 @@ public class UserController {
         PanacheQuery<User> pagedUsers = userService.list(page, size);
         List<User> users = pagedUsers.list();
         if (CollectionUtils.isEmpty(users)) {
-            return Response.ok(new ListResponse(
+            return Response.ok().entity(new ListResponse(
                 0L,
                 0,
                 0,
@@ -73,7 +72,7 @@ public class UserController {
         }
 
         Page pageData = pagedUsers.page();
-        return Response.ok(new ListResponse(
+        return Response.ok().entity(new ListResponse(
             pagedUsers.count(),
             pagedUsers.pageCount(),
             pageData.index,
@@ -89,7 +88,7 @@ public class UserController {
      */
     @GET
     @Path("/{id}")
-    @RolesAllowed({"USER"})
+//    @RolesAllowed({"USER"})
     @SecurityRequirement(name = "apiKey")
     public Response get(@PathParam("id") UUID id) {
         User user = userService.find(id);
@@ -97,7 +96,7 @@ public class UserController {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        return Response.ok(new SimpleResponse(new UserDTO(user))).build();
+        return Response.ok().entity(new UserDTO(user)).build();
     }
 
     /**
@@ -108,7 +107,7 @@ public class UserController {
      */
     @GET
     @Path("/search/{usernameOrEmail}")
-    @RolesAllowed({"USER"})
+//    @RolesAllowed({"USER"})
     @SecurityRequirement(name = "apiKey")
     public Response search(@PathParam("usernameOrEmail") String usernameOrEmail) {
         User user = userService.findByUsernameOrEmail(usernameOrEmail);
@@ -116,7 +115,7 @@ public class UserController {
             return Response.status(Status.NOT_FOUND).build();
         }
 
-        return Response.ok(new SimpleResponse(new UserDTO(user))).build();
+        return Response.ok().entity(new UserDTO(user)).build();
     }
 
     /**
@@ -131,7 +130,7 @@ public class UserController {
         UUID uuid;
         try {
             uuid = userService.create(createRequest);
-        } catch (UserAlreadyExistingException e) {
+        } catch (ResourceConflictException e) {
             LOGGER.error("Failed to create new user");
             return Response.status(Status.CONFLICT).build();
         }

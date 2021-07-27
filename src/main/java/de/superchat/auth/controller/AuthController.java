@@ -1,7 +1,6 @@
 package de.superchat.auth.controller;
 
 import de.superchat.auth.dto.LoginRequest;
-import de.superchat.auth.dto.SimpleResponse;
 import de.superchat.auth.repository.AuthUser;
 import de.superchat.auth.service.AuthService;
 import javax.annotation.security.PermitAll;
@@ -25,7 +24,7 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.jboss.logging.Logger;
 
 @Path("/api/auth")
-@Produces(MediaType.APPLICATION_JSON)
+@Produces(MediaType.TEXT_PLAIN)
 @Consumes(MediaType.APPLICATION_JSON)
 @SecuritySchemes(value = {
     @SecurityScheme(securitySchemeName = "apiKey",
@@ -50,7 +49,6 @@ public class AuthController {
     @POST
     @Path("/login")
     @PermitAll
-    @Produces(MediaType.TEXT_PLAIN)
     public Response login(@Valid LoginRequest loginRequest) {
         AuthUser authUser = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
         if (authUser != null) {
@@ -73,7 +71,7 @@ public class AuthController {
     @RolesAllowed({"USER"})
     @SecurityRequirement(name = "apiKey")
     public Response me(@Context SecurityContext securityContext) {
-        return Response.ok(new SimpleResponse(securityContext.getUserPrincipal().getName())).build();
+        return Response.ok(securityContext.getUserPrincipal().getName()).build();
     }
 
 }

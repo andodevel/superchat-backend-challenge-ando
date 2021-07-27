@@ -3,9 +3,11 @@ package de.superchat.message.controller;
 import de.superchat.message.dto.CreateRequest;
 import de.superchat.message.dto.ListResponse;
 import de.superchat.message.dto.MessageDTO;
+import de.superchat.message.dto.SimpleMessage;
 import de.superchat.message.dto.UserDTO;
 import de.superchat.message.repository.Message;
 import de.superchat.message.service.MessageService;
+import de.superchat.message.service.ResourceNotFoundException;
 import de.superchat.message.service.UnsupportException;
 import de.superchat.message.service.UserService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
@@ -65,11 +67,13 @@ public class MessageController {
     @GET
     @RolesAllowed({"USER"})
     @SecurityRequirement(name = "apiKey")
-    public Response list(@QueryParam("page") Integer page, @QueryParam("size") Integer size) {
-        PanacheQuery<Message> pagedMessages = messageService.list(page, size);
+    public Response list(@Context SecurityContext securityContext,
+            @QueryParam("page") Integer page,
+            @QueryParam("size") Integer size) {
+        PanacheQuery<Message> pagedMessages = messageService.list(securityContext, page, size);
         List<Message> messages = pagedMessages.list();
         if (CollectionUtils.isEmpty(messages)) {
-            return Response.ok(new ListResponse(
+            return Response.ok().entity(new ListResponse(
                 0L,
                 0,
                 0,
@@ -77,16 +81,27 @@ public class MessageController {
         }
 
         Page pageData = pagedMessages.page();
-        return Response.ok(new ListResponse(
+        return Response.ok().entity(new ListResponse(
             pagedMessages.count(),
             pagedMessages.pageCount(),
             pageData.index,
             pageData.size,
             messages.stream().map(message -> {
-                UserDTO sender = userService.findUserById(message.getSenderId());
-                UserDTO receiver = userService.findUserById(message.getReceiverId());
+                UserDTO sender = findUserById(message.getSenderId());
+                UserDTO receiver = findUserById(message.getReceiverId());
                 return new MessageDTO(message, sender, receiver);
             }).collect(Collectors.toList()))).build();
+    }
+
+    private UserDTO findUserById(UUID userId) {
+        Response apiResponse = userService.findUserById(userId);
+        if (apiResponse != null && Status.OK.getStatusCode() == apiResponse.getStatus()) {
+            return apiResponse.readEntity(UserDTO.class);
+        }
+
+        UserDTO emptyUser = new UserDTO();
+        emptyUser.setId(userId);
+        return emptyUser;
     }
 
     /**
@@ -99,7 +114,8 @@ public class MessageController {
     @POST
     @RolesAllowed({"USER"})
     @SecurityRequirement(name = "apiKey")
-    public Response create(@Context SecurityContext securityContext, @Valid CreateRequest createRequest) {
+    public Response create(@Context SecurityContext securityContext,
+            @Valid CreateRequest createRequest) {
         validateReceiver(createRequest);
 
         UUID uuid;
@@ -107,8 +123,13 @@ public class MessageController {
             uuid = messageService.create(securityContext, createRequest);
         } catch (UnsupportException e) {
             LOGGER.error("Failed to create new message");
-            return Response.status(Status.NOT_ACCEPTABLE).build();
+            return Response.status(Status.NOT_ACCEPTABLE).entity(new SimpleMessage("Sending message"
+                + "to external user is not supported yet!")).build();
+        } catch (ResourceNotFoundException e) {
+            LOGGER.error("Failed to create new message");
+            return Response.status(Status.NOT_ACCEPTABLE).entity(new SimpleMessage("Receiver not found!")).build();
         }
+
         if (uuid == null) {
             LOGGER.error("Failed to create new message");
             return Response.status(Status.NOT_ACCEPTABLE).build();

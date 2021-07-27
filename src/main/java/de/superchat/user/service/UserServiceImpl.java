@@ -78,13 +78,13 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public UUID create(CreateRequest createRequest) throws UserAlreadyExistingException {
+    public UUID create(CreateRequest createRequest) throws ResourceConflictException {
         String username = createRequest.getUsername().trim();
         String email = createRequest.getEmail().trim();
         User dbUser = User.find("username = ?1 OR email = ?2", username, email).firstResult();
         if (dbUser != null) {
             LOGGER.warn("User with name " + username + " or email " + email + " already existed!");
-            throw new UserAlreadyExistingException();
+            throw new ResourceConflictException();
         }
 
         User newUser = new User();
