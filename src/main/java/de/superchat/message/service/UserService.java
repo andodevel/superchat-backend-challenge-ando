@@ -20,8 +20,15 @@ public interface UserService {
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    @Retry(maxRetries = 3, delay = 1000)
-    @Fallback(UserServiceFallback.class)
+    @Retry(maxRetries = 3, delay = 200)
+    @Fallback(FindUserByIdFallback.class)
     UserDTO findUserById(@PathParam("id") UUID id);
+
+    @GET
+    @Path("search/{usernameOrEmail}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Retry(maxRetries = 3, delay = 200)
+    @Fallback(FindUserByUsernameOrEmailFallback.class)
+    UserDTO findUserByUsernameOrEmail(@PathParam("usernameOrEmail") String usernameOrEmail);
 
 }

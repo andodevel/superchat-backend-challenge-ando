@@ -136,6 +136,11 @@ public class UserController {
             return Response.status(Status.CONFLICT).build();
         }
 
+        if (uuid == null) {
+            LOGGER.error("Failed to create new user");
+            return Response.status(Status.NOT_ACCEPTABLE).build();
+        }
+
         return Response.created(URI.create("/api/users/" + uuid)).build();
     }
 

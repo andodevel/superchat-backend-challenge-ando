@@ -13,6 +13,7 @@ public class UserDTO implements Serializable {
     private String email;
     private String firstname;
     private String lastname;
+    private String source;
 
     public UserDTO(User entity) {
         this.setId(entity.getId());
@@ -20,6 +21,7 @@ public class UserDTO implements Serializable {
         this.setEmail(entity.getEmail());
         this.setFirstname(entity.getUserInfo().getFirstname());
         this.setLastname(entity.getUserInfo().getLastname());
+        this.setSource(entity.getSource());
     }
 
 }

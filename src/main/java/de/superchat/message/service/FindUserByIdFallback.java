@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 
-public class UserServiceFallback implements FallbackHandler<UserDTO> {
+public class FindUserByIdFallback implements FallbackHandler<UserDTO> {
 
     /**
      * Circuit breaker for rest call to find user by id.
