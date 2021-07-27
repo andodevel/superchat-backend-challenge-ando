@@ -1,15 +1,11 @@
 package de.superchat.auth.repository;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -26,7 +22,7 @@ import org.hibernate.annotations.Where;
 @Entity
 @Table(name = "user", schema = "public")
 @Where(clause = "source = 'SC' and active = true")
-public class User extends PanacheEntityBase {
+public class AuthUser extends PanacheEntityBase {
 
     @Id
     @GeneratedValue(generator = "UUID")
@@ -37,15 +33,14 @@ public class User extends PanacheEntityBase {
     private String email;
     private String salt;
     private String password;
-    @Enumerated(EnumType.STRING)
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "user_role",
         joinColumns = {@JoinColumn(name = "user_id")},
         inverseJoinColumns = {@JoinColumn(name = "role_id")})
-    private Set<Role> roles = new HashSet<>();
+    private Set<AuthRole> roles;
 
-    public static User findByUsernameOrEmail(String usernameOrEmail) {
-        return User.find("username = ?1", usernameOrEmail)
+    public static AuthUser findByUsernameOrEmail(String usernameOrEmail) {
+        return AuthUser.find("username = ?1", usernameOrEmail)
             .firstResult();
     }
 

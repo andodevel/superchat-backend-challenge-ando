@@ -1,7 +1,7 @@
 package de.superchat.auth.service;
 
-import de.superchat.auth.repository.Role;
-import de.superchat.auth.repository.User;
+import de.superchat.auth.repository.AuthUser;
+import de.superchat.auth.repository.AuthRole;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
 import io.smallrye.jwt.build.JwtClaimsBuilder;
@@ -41,15 +41,15 @@ public class AuthServiceImpl implements AuthService {
      * @return Superchat user if correct user and password provided.
      */
     @Override
-    public User authenticate(String username, String password) {
-        User user = User.findByUsernameOrEmail(username);
-        if (user == null) {
+    public AuthUser authenticate(String username, String password) {
+        AuthUser authUser = AuthUser.findByUsernameOrEmail(username);
+        if (authUser == null) {
             LOGGER.error("User " + username + " was not found in Auth DB");
             return null;
         }
 
-        String hashedDBPassword = user.getPassword();
-        String hexSalt = user.getSalt();
+        String hashedDBPassword = authUser.getPassword();
+        String hexSalt = authUser.getSalt();
         String hashedPassword = null;
         try {
             hashedPassword = BcryptUtil.bcryptHash(bcryptSecret + password, bcryptCount, Hex.decodeHex(hexSalt));
@@ -58,7 +58,7 @@ public class AuthServiceImpl implements AuthService {
         }
         if (StringUtils.equals(hashedDBPassword, hashedPassword)) {
             LOGGER.info("User " + username + " was authenticated");
-            return user;
+            return authUser;
         }
 
         LOGGER.warn("Failed to authenticate user " + username);
@@ -68,20 +68,20 @@ public class AuthServiceImpl implements AuthService {
     /**
      * Generate JWT access token for Superchat user. External(dummy) user is not allowed to login.
      *
-     * @param user Superchat user only
+     * @param authUser Superchat user only
      * @return jwt access token
      */
     @Override
-    public String generateJWTToken(User user) {
-        String username = user.getUsername();
-        String email = user.getEmail();
-        Set<Role> roles = user.getRoles();
+    public String generateJWTToken(AuthUser authUser) {
+        String username = authUser.getUsername();
+        String email = authUser.getEmail();
+        Set<AuthRole> roles = authUser.getRoles();
 
         JwtClaimsBuilder claimsBuilder = Jwt.claims();
         long currentTimeInSecs = System.currentTimeMillis() / 1000;
         claimsBuilder.subject(username);
         claimsBuilder.issuer(jwtIssuer);
-        claimsBuilder.groups(roles.stream().map(Role::getId).collect(Collectors.toSet()));
+        claimsBuilder.groups(roles.stream().map(AuthRole::getId).collect(Collectors.toSet()));
         claimsBuilder.issuedAt(currentTimeInSecs);
         claimsBuilder.expiresAt(currentTimeInSecs + jwtDuration);
         claimsBuilder.claim(Claims.email.name(), email);

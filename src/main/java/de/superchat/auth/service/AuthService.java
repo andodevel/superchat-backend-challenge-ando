@@ -1,6 +1,6 @@
 package de.superchat.auth.service;
 
-import de.superchat.auth.repository.User;
+import de.superchat.auth.repository.AuthUser;
 
 public interface AuthService {
 
@@ -11,14 +11,14 @@ public interface AuthService {
      * @param password raw password
      * @return Superchat user if correct user and password provided.
      */
-    User authenticate(String username, String password);
+    AuthUser authenticate(String username, String password);
 
     /**
      * Generate JWT access token for Superchat user. External(dummy) user is not allowed to login.
      *
-     * @param user Superchat user only
+     * @param authUser Superchat user only
      * @return jwt access token
      */
-    String generateJWTToken(User user);
+    String generateJWTToken(AuthUser authUser);
 
 }

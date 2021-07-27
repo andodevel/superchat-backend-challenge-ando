@@ -10,10 +10,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "role", schema = "public")
 @Entity
-public class Role {
+public class AuthRole {
 
-    public static final String ADMIN_ROLE = "ADMIN";
-    public static final String USER_ROLE = "USER";
+    public enum AsEnum {
+        ADMIN,
+        USER
+    }
 
     @Id
     private String id;

@@ -3,8 +3,7 @@ package de.superchat.auth.controller;
 import de.superchat.auth.dto.LoginRequest;
 import de.superchat.auth.dto.LoginResponse;
 import de.superchat.auth.dto.SimpleResponse;
-import de.superchat.auth.repository.Role;
-import de.superchat.auth.repository.User;
+import de.superchat.auth.repository.AuthUser;
 import de.superchat.auth.service.AuthService;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
@@ -42,10 +41,10 @@ public class AuthController {
     @POST
     @Path("/login")
     public Response login(@Valid LoginRequest loginRequest) {
-        User user = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
-        if (user != null) {
+        AuthUser authUser = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
+        if (authUser != null) {
             LOGGER.info("User " + loginRequest.getUsername() + " has been logged in");
-            return Response.ok(new LoginResponse(authService.generateJWTToken(user))).build();
+            return Response.ok(new LoginResponse(authService.generateJWTToken(authUser))).build();
         } else {
             LOGGER.info("User " + loginRequest.getUsername() + " was failed to log in");
             return Response.status(Status.UNAUTHORIZED).build();
@@ -58,7 +57,7 @@ public class AuthController {
      * @param securityContext injected current security context
      * @return logged in username/email
      */
-    @RolesAllowed({Role.USER_ROLE})
+    @RolesAllowed({"USER"})
     @GET
     @Path("/me")
     public Response me(@Context SecurityContext securityContext) {

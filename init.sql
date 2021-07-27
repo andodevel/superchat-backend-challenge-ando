@@ -15,23 +15,23 @@ create extension if not exists citext;
 -- Core service tables
 CREATE TABLE source (
     id            varchar(8)        PRIMARY KEY,
-    name          varchar(64)       NOT NULL UNIQUE
+    description   text              NOT NULL DEFAULT ''
 );
 ALTER TABLE source OWNER TO superuser;
-INSERT INTO "source" (id, name) VALUES ('SC', 'Superchat');  -- Internal, default
-INSERT INTO "source" (id, name) VALUES ('FB', 'Facebook');   -- Not supported
-INSERT INTO "source" (id, name) VALUES ('TG', 'Telegram');   -- Not supported
-INSERT INTO "source" (id, name) VALUES ('GM', 'Gmail');      -- Not supported
-INSERT INTO "source" (id, name) VALUES ('AN', 'Anonymous');  -- Default external
+INSERT INTO "source" (id, description) VALUES ('SC', 'Superchat');  -- Internal, default
+INSERT INTO "source" (id, description) VALUES ('FB', 'Facebook');   -- Not supported
+INSERT INTO "source" (id, description) VALUES ('TG', 'Telegram');   -- Not supported
+INSERT INTO "source" (id, description) VALUES ('GM', 'Gmail');      -- Not supported
+INSERT INTO "source" (id, description) VALUES ('AN', 'Anonymous');  -- Default external
 
 CREATE TABLE chat_type (
     id            varchar(8)        PRIMARY KEY,
-    name          varchar(64)       NOT NULL UNIQUE
+    description   text              NOT NULL DEFAULT ''
 );
 ALTER TABLE chat_type OWNER TO superuser;
-INSERT INTO chat_type (id, name) VALUES ('DM', 'DirectMessage'); -- Default
-INSERT INTO chat_type (id, name) VALUES ('GR', 'Group');         -- Not supported
-INSERT INTO chat_type (id, name) VALUES ('CH', 'Channel');       -- Not supported
+INSERT INTO chat_type (id, description) VALUES ('DM', 'DirectMessage'); -- Default
+INSERT INTO chat_type (id, description) VALUES ('GR', 'Group');         -- Not supported
+INSERT INTO chat_type (id, description) VALUES ('CH', 'Channel');       -- Not supported
 
 -- This is to shard message table - not really happens yet.
 CREATE TABLE room (
@@ -93,8 +93,7 @@ CREATE TABLE user_info (
     user_id       uuid        PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
     firstname     text,
     lastname      text,
-    properties    json,
-    created       timestamp WITHOUT time zone DEFAULT (now() at time zone 'utc')
+    created       timestamp WITHOUT time zone DEFAULT now()
 );
 ALTER TABLE user_info OWNER TO superuser;
 INSERT INTO "user_info" ("user_id", "firstname")
@@ -116,7 +115,7 @@ CREATE TABLE message (
     source        varchar(8)        NOT NULL DEFAULT 'SC',
     room_id       uuid              NOT NULL,
     content       text              NOT NULL DEFAULT '',
-    created       timestamp WITHOUT time zone DEFAULT (now() at time zone 'utc')
+    created       timestamp WITHOUT time zone DEFAULT now()
 );
 ALTER TABLE message OWNER TO superuser;
 CREATE INDEX message_sender_id ON message (sender_id);
@@ -129,7 +128,7 @@ CREATE TABLE webhook (
     id            uuid             PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id       uuid             NOT NULL,
     source_id     varchar(8)       NOT NULL,
-    created       timestamp WITHOUT time zone DEFAULT (now() at time zone 'utc')
+    created       timestamp WITHOUT time zone DEFAULT now()
 );
 ALTER TABLE webhook OWNER TO superuser;
 CREATE INDEX webhook_user_id ON webhook (user_id);
