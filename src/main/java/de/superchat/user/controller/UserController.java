@@ -88,7 +88,7 @@ public class UserController {
      */
     @GET
     @Path("/{id}")
-//    @RolesAllowed({"USER"})
+    @RolesAllowed({"USER"})
     @SecurityRequirement(name = "apiKey")
     public Response get(@PathParam("id") UUID id) {
         User user = userService.find(id);
@@ -107,7 +107,7 @@ public class UserController {
      */
     @GET
     @Path("/search/{usernameOrEmail}")
-//    @RolesAllowed({"USER"})
+    @RolesAllowed({"USER"})
     @SecurityRequirement(name = "apiKey")
     public Response search(@PathParam("usernameOrEmail") String usernameOrEmail) {
         User user = userService.findByUsernameOrEmail(usernameOrEmail);
