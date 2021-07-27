@@ -2,8 +2,7 @@
 
 ## Installation
 1. JDK 11
-2. Docker and docker compose
-
+2. Docker and Docker compose
 
 cd to the repository directory and follow below instruction.
 
@@ -14,7 +13,7 @@ chmod +x ./dev.sh
  ```
 
 ### Start 
-Start docker containers and quarkus in background.
+Start Docker containers in background and Quarkus on foreground(able to stop by SIGINT).
  ```bash
 ./dev.sh -r
  ```  
@@ -25,7 +24,7 @@ Next time, if you do not change anything, _-r_ could be omitted.
  ```
 
 ### Stop
-Specify _-s_ option to stop running docker containers and quarkus.
+Specify _-s_ option to stop running Docker containers and quarkus.
  ```bash
 ./dev.sh -s
  ```  

@@ -53,7 +53,7 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * List users with page
+     * List users with pagination
      *
      * @param page
      * @param size
@@ -66,8 +66,8 @@ public class UserServiceImpl implements UserService {
         pageSize = pageSize > maxPageSize ? maxPageSize : pageSize;
 
         PanacheQuery<PanacheEntityBase> all = User.findAll();
-        LOGGER.info("Query users with page " + page + ", " +size);
-        return all.page(Page.of(pageIndex , pageSize));
+        LOGGER.info("Query users with page " + page + ", " + size);
+        return all.page(Page.of(pageIndex, pageSize));
     }
 
     /**
@@ -78,13 +78,13 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     @Transactional
-    public UUID create(CreateRequest createRequest) {
+    public UUID create(CreateRequest createRequest) throws UserAlreadyExistingException {
         String username = createRequest.getUsername().trim();
         String email = createRequest.getEmail().trim();
         User dbUser = User.find("username = ?1 OR email = ?2", username, email).firstResult();
         if (dbUser != null) {
             LOGGER.warn("User with name " + username + " or email " + email + " already existed!");
-            return null;
+            throw new UserAlreadyExistingException();
         }
 
         User newUser = new User();

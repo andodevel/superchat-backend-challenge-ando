@@ -5,6 +5,7 @@ import de.superchat.user.dto.ListResponse;
 import de.superchat.user.dto.SimpleResponse;
 import de.superchat.user.dto.UserDTO;
 import de.superchat.user.repository.User;
+import de.superchat.user.service.UserAlreadyExistingException;
 import de.superchat.user.service.UserService;
 import io.quarkus.hibernate.orm.panache.PanacheQuery;
 import io.quarkus.panache.common.Page;
@@ -130,12 +131,7 @@ public class UserController {
         UUID uuid;
         try {
             uuid = userService.create(createRequest);
-        } catch (Exception e) {
-            LOGGER.error("Failed to create new user");
-            return Response.status(Status.INTERNAL_SERVER_ERROR).build();
-        }
-
-        if (uuid == null) {
+        } catch (UserAlreadyExistingException e) {
             LOGGER.error("Failed to create new user");
             return Response.status(Status.CONFLICT).build();
         }

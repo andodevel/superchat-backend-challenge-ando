@@ -25,9 +25,13 @@ public class Message extends PanacheEntityBase {
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
+    @Column(name = "sender_id")
     private UUID senderId;
+    @Column(name = "receiver_id")
     private UUID receiverId;
     private String source;
+    // TODO: Room is better way to manage the message and scale the system. Unfortunately, not support yet!
+    @Column(name = "room_id")
     private UUID roomId;
     private String content;
     @Column(name = "created", columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")

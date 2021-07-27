@@ -24,7 +24,7 @@ public interface UserService {
     User findByUsernameOrEmail(String usernameOrEmail);
 
     /**
-     * List users with page
+     * List users with pagination
      *
      * @param page
      * @param size
@@ -38,6 +38,6 @@ public interface UserService {
      * @param createRequest
      * @return
      */
-    UUID create(CreateRequest createRequest);
+    UUID create(CreateRequest createRequest) throws UserAlreadyExistingException;
 
 }

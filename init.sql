@@ -24,30 +24,28 @@ INSERT INTO "source" (id, description) VALUES ('TG', 'Telegram');   -- Not suppo
 INSERT INTO "source" (id, description) VALUES ('GM', 'Gmail');      -- Not supported
 INSERT INTO "source" (id, description) VALUES ('AN', 'Anonymous');  -- Default external
 
-CREATE TABLE chat_type (
+CREATE TABLE room_type (
     id            varchar(8)        PRIMARY KEY,
     description   text              NOT NULL DEFAULT ''
 );
-ALTER TABLE chat_type OWNER TO superuser;
-INSERT INTO chat_type (id, description) VALUES ('DM', 'DirectMessage'); -- Default
-INSERT INTO chat_type (id, description) VALUES ('GR', 'Group');         -- Not supported
-INSERT INTO chat_type (id, description) VALUES ('CH', 'Channel');       -- Not supported
+ALTER TABLE room_type OWNER TO superuser;
+INSERT INTO room_type (id, description) VALUES ('DM', 'DirectMessage'); -- Default
+INSERT INTO room_type (id, description) VALUES ('GR', 'Group');         -- Not supported
+INSERT INTO room_type (id, description) VALUES ('CH', 'Channel');       -- Not supported
 
 -- This is to shard message table - not really happens yet.
 CREATE TABLE room (
     id                     serial      PRIMARY KEY,
-    participant1_id        uuid,       -- Direct message
-    participant2_id        uuid,       -- Direct message
-    group_id               uuid,       -- Group(Not supported)
-    channel_id             uuid,       -- Chanel(Not supported)
-    UNIQUE (participant1_id, participant2_id),
-    UNIQUE (group_id),
-    UNIQUE (channel_id)
+    room_type              varchar(8)  REFERENCES room_type(id) ON DELETE CASCADE ON UPDATE CASCADE
 );
 ALTER TABLE room OWNER TO superuser;
-ALTER TABLE room add CONSTRAINT room_chk CHECK ((participant1_id IS NOT NULL AND participant2_id IS NOT NULL)
-OR group_id IS NOT NULL
-OR channel_id IS NOT NULL);
+
+CREATE TABLE user_room (
+    user_id       uuid,
+    room_id       serial            REFERENCES room(id) ON UPDATE CASCADE,
+    CONSTRAINT user_room_pkey PRIMARY KEY (user_id, room_id)
+);
+ALTER TABLE user_room OWNER TO superuser;
 
 -- Auth and user service tables
 CREATE TABLE role (
@@ -113,7 +111,7 @@ CREATE TABLE message (
     receiver_id   uuid              NOT NULL,
     type          varchar(8)        NOT NULL DEFAULT 'DM',
     source        varchar(8)        NOT NULL DEFAULT 'SC',
-    room_id       uuid, -- TODO: Room is better way to manage the message and scale the system. Unfortunately, not support yet!
+    room_id       uuid,
     content       text              NOT NULL DEFAULT '',
     created       timestamp WITHOUT time zone DEFAULT now()
 );

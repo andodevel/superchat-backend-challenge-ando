@@ -3,10 +3,9 @@
 _start() {
     CURRENT_UID=$(id -u):$(id -g) MUID=$(id -u) docker-compose start
 
-    # Sleep 10 second to wait for dockers up
-    echo "10 second until quarkus start" && sleep 10
-
-    ./mvnw quarkus:dev -f pom.xml &
+    # Sleep 5 seconds to wait for dockers up
+    echo "-------- 5 seconds until starting Quarkus..." && sleep 5
+    ./mvnw quarkus:dev
 }
 
 _stop() {

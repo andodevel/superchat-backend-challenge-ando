@@ -66,7 +66,7 @@ public class AuthController {
      * Query current logged in user.
      *
      * @param securityContext injected current security context
-     * @return logged in username/email
+     * @return logged in user id
      */
     @GET
     @Path("/me")

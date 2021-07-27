@@ -6,6 +6,7 @@ import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
 import io.smallrye.jwt.build.JwtClaimsBuilder;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
 import org.apache.commons.codec.DecoderException;
@@ -65,13 +66,15 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public String generateJWTToken(AuthUser authUser) {
+        UUID id = authUser.getId();
         String username = authUser.getUsername();
         String email = authUser.getEmail();
         Set<AuthRole> roles = authUser.getRoles();
 
         JwtClaimsBuilder claimsBuilder = Jwt.claims();
-        claimsBuilder.subject(username);
+        claimsBuilder.subject(String.valueOf(id));
         claimsBuilder.groups(roles.stream().map(AuthRole::getId).collect(Collectors.toSet()));
+        claimsBuilder.claim(Claims.preferred_username.name(), username);
         claimsBuilder.claim(Claims.email.name(), email);
 
         String token = claimsBuilder.sign();

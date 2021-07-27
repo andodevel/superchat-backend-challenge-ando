@@ -7,11 +7,12 @@ However, the setup and configuration of microservices quickly grows
 and draws too much effort that distract me from real business logic.
 Nevertheless, I decided to take a hybrid approach:
 1. Module packages under `de.superchat` could be viewed as microservices on their own.
-2. Database tables are designed to be used in their own service context boundary.
-The only exception is auth and user services share `user` table.
+   You might expect some model duplication due to this nature.
+2. Database tables are designed to be used in their own service context boundary. 
+   The only exception is auth and user services share `user` table.
 3. Internal communication are done by REST client and context propagation.
 4. No API gateway. I intended to add Nginx as API routing but because we keep code in 
-one place and run in same Quarkus instance. There is no more need.
+   one place and run in same Quarkus instance. There is no more need.
 
 ## Assumptions
 I assume a couple of things during the development:
