@@ -39,8 +39,8 @@ public class AuthUser extends PanacheEntityBase {
         inverseJoinColumns = {@JoinColumn(name = "role_id")})
     private Set<AuthRole> roles;
 
-    public static AuthUser findByUsernameOrEmail(String usernameOrEmail) {
-        return AuthUser.find("username = ?1", usernameOrEmail)
+    public static AuthUser findByUsername(String username) {
+        return AuthUser.find("username = ?1", username)
             .firstResult();
     }
 

@@ -1,11 +1,10 @@
 package de.superchat.auth.service;
 
-import de.superchat.auth.repository.AuthUser;
 import de.superchat.auth.repository.AuthRole;
+import de.superchat.auth.repository.AuthUser;
 import io.quarkus.elytron.security.common.BcryptUtil;
 import io.smallrye.jwt.build.Jwt;
 import io.smallrye.jwt.build.JwtClaimsBuilder;
-import java.security.SecureRandom;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.enterprise.context.ApplicationScoped;
@@ -21,15 +20,8 @@ public class AuthServiceImpl implements AuthService {
 
     public static final Logger LOGGER = Logger.getLogger(AuthService.class);
 
-    @ConfigProperty(name = "mp.jwt.verify.issuer")
-    String jwtIssuer;
-
-    @ConfigProperty(name = "de.superchat.jwt.duration")
-    long jwtDuration;
-
     @ConfigProperty(name = "de.superchat.auth.bcrypt.secret")
     String bcryptSecret;
-
     @ConfigProperty(name = "de.superchat.auth.bcrypt.count")
     short bcryptCount;
 
@@ -42,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public AuthUser authenticate(String username, String password) {
-        AuthUser authUser = AuthUser.findByUsernameOrEmail(username);
+        AuthUser authUser = AuthUser.findByUsername(username);
         if (authUser == null) {
             LOGGER.error("User " + username + " was not found in Auth DB");
             return null;
@@ -78,29 +70,13 @@ public class AuthServiceImpl implements AuthService {
         Set<AuthRole> roles = authUser.getRoles();
 
         JwtClaimsBuilder claimsBuilder = Jwt.claims();
-        long currentTimeInSecs = System.currentTimeMillis() / 1000;
         claimsBuilder.subject(username);
-        claimsBuilder.issuer(jwtIssuer);
         claimsBuilder.groups(roles.stream().map(AuthRole::getId).collect(Collectors.toSet()));
-        claimsBuilder.issuedAt(currentTimeInSecs);
-        claimsBuilder.expiresAt(currentTimeInSecs + jwtDuration);
         claimsBuilder.claim(Claims.email.name(), email);
 
         String token = claimsBuilder.sign();
         LOGGER.info("Generated JWT token for `" + username + "`");
         return token;
-    }
-
-    /**
-     * Random a password salt to be used with bcrypt
-     *
-     * @return salt as array of byte
-     */
-    private static byte[] randomBcryptSalt() {
-        SecureRandom random = new SecureRandom();
-        byte salt[] = new byte[16];
-        random.nextBytes(salt);
-        return salt;
     }
 
 }

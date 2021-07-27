@@ -13,7 +13,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
@@ -36,7 +35,7 @@ public class User extends PanacheEntityBase {
     private String email;
     private String salt;
     private String password;
-    private Boolean active;
+    private Boolean active = Boolean.TRUE;
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     @PrimaryKeyJoinColumn
     private UserInfo userInfo;
@@ -45,8 +44,14 @@ public class User extends PanacheEntityBase {
         joinColumns = {@JoinColumn(name = "user_id")},
         inverseJoinColumns = {@JoinColumn(name = "role_id")})
     private Set<Role> roles = new HashSet<>();
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "source_id")
-    private Source source;
+    /**
+     * source as String. Source model must be handled by core service, out of context of user service.
+     */
+    private String source = "SC";
+
+    public static User findByUsernameOrEmail(String usernameOrEmail) {
+        return User.find("username = ?1 OR email = ?2", usernameOrEmail, usernameOrEmail)
+            .firstResult();
+    }
 
 }

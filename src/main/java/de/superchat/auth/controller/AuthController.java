@@ -1,7 +1,6 @@
 package de.superchat.auth.controller;
 
 import de.superchat.auth.dto.LoginRequest;
-import de.superchat.auth.dto.LoginResponse;
 import de.superchat.auth.dto.SimpleResponse;
 import de.superchat.auth.repository.AuthUser;
 import de.superchat.auth.service.AuthService;
@@ -9,6 +8,7 @@ import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -22,6 +22,7 @@ import org.jboss.logging.Logger;
 
 @Path("/api/auth")
 @Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
 public class AuthController {
 
     public static final Logger LOGGER = Logger.getLogger(AuthController.class);
@@ -37,14 +38,14 @@ public class AuthController {
      * @param loginRequest username and password
      * @return JWT access token or error
      */
-    @PermitAll
     @POST
     @Path("/login")
+    @PermitAll
     public Response login(@Valid LoginRequest loginRequest) {
         AuthUser authUser = authService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
         if (authUser != null) {
             LOGGER.info("User " + loginRequest.getUsername() + " has been logged in");
-            return Response.ok(new LoginResponse(authService.generateJWTToken(authUser))).build();
+            return Response.ok(new SimpleResponse(authService.generateJWTToken(authUser))).build();
         } else {
             LOGGER.info("User " + loginRequest.getUsername() + " was failed to log in");
             return Response.status(Status.UNAUTHORIZED).build();
@@ -57,9 +58,9 @@ public class AuthController {
      * @param securityContext injected current security context
      * @return logged in username/email
      */
-    @RolesAllowed({"USER"})
     @GET
     @Path("/me")
+    @RolesAllowed({"USER"})
     public Response me(@Context SecurityContext securityContext) {
         return Response.ok(new SimpleResponse(securityContext.getUserPrincipal().getName())).build();
     }

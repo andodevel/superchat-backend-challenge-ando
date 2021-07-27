@@ -60,9 +60,9 @@ INSERT INTO role (id, description) VALUES ('USER', 'Superchat internal and exter
 
 CREATE TABLE "user" (
     id           uuid         PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username     text         NOT NULL UNIQUE,
+    username     varchar(64)  NOT NULL UNIQUE,
     email        citext       UNIQUE,
-    salt         text,
+    salt         varchar(32), -- Always 16 bytes in HEX form
     password     text,
     source       varchar(8)   NOT NULL DEFAULT 'SC', -- External source not supported yet
     active       boolean      NOT NULL DEFAULT true
@@ -90,9 +90,9 @@ INSERT INTO user_role (user_id, role_id) VALUES ((SELECT "id" from "user" where 
 INSERT INTO user_role (user_id, role_id) VALUES ((SELECT "id" from "user" where "username" = 'dummygmailuser'), 'USER');
 
 CREATE TABLE user_info (
-    user_id       uuid        PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
-    firstname     text,
-    lastname      text,
+    user_id       uuid               PRIMARY KEY REFERENCES "user"(id) ON DELETE CASCADE,
+    firstname     varchar(64)        DEFAULT '',
+    lastname      varchar(64)        DEFAULT '',
     created       timestamp WITHOUT time zone DEFAULT now()
 );
 ALTER TABLE user_info OWNER TO superuser;

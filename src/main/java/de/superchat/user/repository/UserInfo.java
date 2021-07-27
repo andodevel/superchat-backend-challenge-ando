@@ -2,6 +2,7 @@ package de.superchat.user.repository;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import java.util.Date;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -21,7 +22,7 @@ import lombok.NoArgsConstructor;
 public class UserInfo extends PanacheEntityBase {
 
     @Id
-    private String userId;
+    private UUID userId;
     private String firstname;
     private String lastname;
     @Column(name = "created", columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")

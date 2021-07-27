@@ -1,4 +1,4 @@
-package de.superchat.auth.dto;
+package de.superchat.user.dto;
 
 import java.io.Serializable;
 import lombok.AllArgsConstructor;
@@ -16,4 +16,3 @@ public class SimpleResponse<T extends Serializable> {
     private T result;
 
 }
-
