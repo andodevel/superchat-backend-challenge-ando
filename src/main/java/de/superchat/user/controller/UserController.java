@@ -40,6 +40,14 @@ public class UserController {
     @Inject
     UserService userService;
 
+    /**
+     * List all users with pagination applied.
+     *
+     * @param page page index, 0 by default
+     * @param size page size, `auth.default.page.size` config value by default
+     *             Limited by `auth.max.page.size` config value
+     * @return list of all internal and external users.
+     */
     @GET
     @RolesAllowed({"USER"})
     public Response list(@QueryParam("page") Integer page, @QueryParam("size") Integer size) {
@@ -62,6 +70,12 @@ public class UserController {
             users.stream().map(UserDTO::new).collect(Collectors.toList()))).build();
     }
 
+    /**
+     * Get a user by id
+     *
+     * @param id uuid formatted id of user
+     * @return user data if exists
+     */
     @GET
     @Path("/{id}")
     @RolesAllowed({"USER"})
@@ -74,6 +88,12 @@ public class UserController {
         return Response.ok(new SimpleResponse(new UserDTO(user))).build();
     }
 
+    /**
+     * Get a user by username or email. It's useful to resolve client request that use human friendly string than uuid.
+     *
+     * @param usernameOrEmail username or email
+     * @return user data if exists
+     */
     @GET
     @Path("/search/{usernameOrEmail}")
     @RolesAllowed({"USER"})
@@ -86,6 +106,12 @@ public class UserController {
         return Response.ok(new SimpleResponse(new UserDTO(user))).build();
     }
 
+    /**
+     * Create new internal Superchat user. Note that external Webhook user are not supported now.
+     *
+     * @param createRequest
+     * @return REST resource URI of new user or error if failed to create.
+     */
     @POST
     @PermitAll
     public Response create(@Valid CreateRequest createRequest) {

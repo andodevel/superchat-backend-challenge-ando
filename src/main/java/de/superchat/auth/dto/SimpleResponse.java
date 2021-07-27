@@ -5,6 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * Wrap simple result in JSON
+ * @param <T> type extends Serializable
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -29,16 +29,35 @@ public class UserServiceImpl implements UserService {
     @ConfigProperty(name = "de.superchat.auth.max.page.size")
     Integer maxPageSize;
 
+    /**
+     * Find user by their id
+     *
+     * @param id
+     * @return
+     */
     @Override
     public User find(UUID id) {
         return User.findById(id);
     }
 
+    /**
+     * Find user by username or email
+     *
+     * @param usernameOrEmail
+     * @return
+     */
     @Override
     public User findByUsernameOrEmail(String usernameOrEmail) {
         return User.findByUsernameOrEmail(usernameOrEmail);
     }
 
+    /**
+     * List users with page
+     *
+     * @param page
+     * @param size
+     * @return
+     */
     @Override
     public PanacheQuery<User> list(Integer page, Integer size) {
         int pageIndex = page == null || page < 0 ? 0 : page;
@@ -50,6 +69,12 @@ public class UserServiceImpl implements UserService {
         return all.page(Page.of(pageIndex , pageSize));
     }
 
+    /**
+     * Create new user
+     *
+     * @param createRequest
+     * @return
+     */
     @Override
     @Transactional
     public UUID create(CreateRequest createRequest) {

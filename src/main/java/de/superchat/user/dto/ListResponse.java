@@ -5,6 +5,11 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ *  Wrap list of DTO in pagination object.
+ *
+ * @param <T> type extends Serializable
+ */
 @Data
 @AllArgsConstructor
 public class ListResponse<T extends Serializable> {
