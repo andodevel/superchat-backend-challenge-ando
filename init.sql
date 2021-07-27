@@ -107,7 +107,7 @@ VALUES ((SELECT "id" from "user" where "username" = 'dummygmailuser'), 'Uberto',
 -- Message service tables
 CREATE TABLE message (
     id            uuid              PRIMARY KEY DEFAULT uuid_generate_v4(),
-    sender_id     uuid              NOT NULL,
+    sender_id     uuid, -- Sender may be null in case of webhook
     receiver_id   uuid              NOT NULL,
     type          varchar(8)        NOT NULL DEFAULT 'DM',
     source        varchar(8)        NOT NULL DEFAULT 'SC',

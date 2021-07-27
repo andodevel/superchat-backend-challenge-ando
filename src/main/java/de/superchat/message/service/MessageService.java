@@ -15,7 +15,7 @@ public interface MessageService {
      * @param size
      * @return message that current logged in user is sender or receiver.
      */
-    PanacheQuery<Message> list(SecurityContext securityContext, Integer page, Integer size);
+    PanacheQuery<Message> list(UUID userId, Integer page, Integer size);
 
     /**
      * Create message. Not allowed external user to be receiver.
@@ -23,7 +23,7 @@ public interface MessageService {
      * @param createRequest
      * @return
      */
-    UUID create(SecurityContext securityContext, CreateRequest createRequest)
+    UUID create(UUID senderId, CreateRequest createRequest)
         throws UnsupportException, ResourceNotFoundException;
 
 }

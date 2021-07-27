@@ -70,7 +70,8 @@ public class MessageController {
     public Response list(@Context SecurityContext securityContext,
             @QueryParam("page") Integer page,
             @QueryParam("size") Integer size) {
-        PanacheQuery<Message> pagedMessages = messageService.list(securityContext, page, size);
+        UUID userId = UUID.fromString(securityContext.getUserPrincipal().getName());
+        PanacheQuery<Message> pagedMessages = messageService.list(userId, page, size);
         List<Message> messages = pagedMessages.list();
         if (CollectionUtils.isEmpty(messages)) {
             return Response.ok().entity(new ListResponse(
@@ -87,8 +88,18 @@ public class MessageController {
             pageData.index,
             pageData.size,
             messages.stream().map(message -> {
-                UserDTO sender = findUserById(message.getSenderId());
-                UserDTO receiver = findUserById(message.getReceiverId());
+                UUID senderId = message.getSenderId();
+                UserDTO sender = null;
+                if (senderId != null) {
+                    sender = findUserById(senderId);
+                }
+
+                UUID receiverId = message.getReceiverId();
+                UserDTO receiver = null;
+                if (receiverId != null) {
+                    receiver = findUserById(receiverId);
+                }
+
                 return new MessageDTO(message, sender, receiver);
             }).collect(Collectors.toList()))).build();
     }
@@ -120,7 +131,8 @@ public class MessageController {
 
         UUID uuid;
         try {
-            uuid = messageService.create(securityContext, createRequest);
+            UUID senderId = UUID.fromString(securityContext.getUserPrincipal().getName());
+            uuid = messageService.create(senderId, createRequest);
         } catch (UnsupportException e) {
             LOGGER.error("Failed to create new message");
             return Response.status(Status.NOT_ACCEPTABLE).entity(new SimpleMessage("Sending message"

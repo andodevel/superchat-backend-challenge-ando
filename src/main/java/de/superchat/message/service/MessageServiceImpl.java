@@ -14,7 +14,6 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.SecurityContext;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
@@ -41,14 +40,14 @@ public class MessageServiceImpl implements MessageService {
      * @return message that current logged in user is sender or receiver.
      */
     @Override
-    public PanacheQuery<Message> list(SecurityContext securityContext, Integer page, Integer size) {
+    public PanacheQuery<Message> list(UUID userId, Integer page, Integer size) {
         int pageIndex = page == null || page < 0 ? 0 : page;
         int pageSize = size == null || size < 0 ? defaultPageSize : size;
         pageSize = pageSize > maxPageSize ? maxPageSize : pageSize;
 
         PanacheQuery<PanacheEntityBase> all = Message.find("sender_id = ?1 or receiver_id = ?1",
             Sort.descending("created"),
-            UUID.fromString(securityContext.getUserPrincipal().getName()));
+            userId);
         LOGGER.info("Query messages with page " + page + ", " + size);
         return all.page(Page.of(pageIndex, pageSize));
     }
@@ -61,26 +60,45 @@ public class MessageServiceImpl implements MessageService {
      */
     @Override
     @Transactional
-    public UUID create(SecurityContext securityContext, CreateRequest createRequest)
+    public UUID create(UUID senderId, CreateRequest createRequest)
         throws UnsupportException, ResourceNotFoundException {
-        UserDTO receiver = getReceiver(createRequest);
-        if (receiver == null || receiver.getId() == null) {
+        UUID receiverId = null;
+        if (senderId == null) {
+            /*
+             * TODO: Webhook would fail to retrieve user info due to its lack of auth context.
+             * We could solve this issue by broadcast message to a fix data background jobs or
+             * make consumer RunAs system/admin user.
+             */
+            String reqReceiverId = createRequest.getReceiverId();
+            if (StringUtils.isNotBlank(reqReceiverId)) {
+                receiverId = UUID.fromString(reqReceiverId.trim());
+            }
+        } else {
+            UserDTO receiver = getReceiver(createRequest);
+            if (receiver == null || receiver.getId() == null) {
+                LOGGER.error("Receiver not found!");
+                throw new ResourceNotFoundException();
+            }
+
+            if (StringUtils.isNotBlank(receiver.getSource()) && !"SC".equals(receiver.getSource())) {
+                LOGGER.error("External receiver not supported!");
+                throw new UnsupportException();
+            }
+            receiverId = receiver.getId();
+        }
+
+        if (receiverId == null) {
             LOGGER.error("Receiver not found!");
             throw new ResourceNotFoundException();
         }
 
-        if (!"SC".equals(receiver.getSource())) {
-            LOGGER.error("External receiver not supported!");
-            throw new UnsupportException();
-        }
-
         Message newMessage = new Message();
-        newMessage.setSource("SC");
-        if (securityContext != null) {
-            newMessage.setSenderId(UUID.fromString(securityContext.getUserPrincipal().getName()));
-            newMessage.setSource("AN"); // Anonymous, expected to be called by webhook
+        newMessage.setSource("AN"); // Anonymous, expected to be called by webhook
+        if (senderId != null) {
+            newMessage.setSenderId(senderId);
+            newMessage.setSource("SC");
         }
-        newMessage.setReceiverId(receiver.getId());
+        newMessage.setReceiverId(receiverId);
         newMessage.setContent(createRequest.getContent());
         newMessage.setRoomId(null);
         newMessage.setCreated(new Date());
@@ -111,6 +129,12 @@ public class MessageServiceImpl implements MessageService {
 
         if (apiResponse != null && Status.OK.getStatusCode() == apiResponse.getStatus()) {
             return apiResponse.readEntity(UserDTO.class);
+        }
+
+        if (StringUtils.isNoneBlank(receiverId)) {
+            UserDTO webhookReceiver = new UserDTO();
+            webhookReceiver.setId(UUID.fromString(receiverId));
+            return webhookReceiver;
         }
 
         return null;
